@@ -8,8 +8,7 @@ import java.util.List;
  * 
  * @author Todor Balabanov
  */
-public class SimpleRulesArtificialIntelligence extends
-		AbstractArtificialIntelligence {
+public class SimpleRulesArtificialIntelligence extends AbstractArtificialIntelligence {
 	/**
 	 * 
 	 */
@@ -88,8 +87,7 @@ public class SimpleRulesArtificialIntelligence extends
 					return true;
 				}
 
-				for (k = 0; k < WIN_LINE_LENGTH && (i + k) < state.length
-						&& (j + k) < state[i].length; k++) {
+				for (k = 0; k < WIN_LINE_LENGTH && (i + k) < state.length && (j + k) < state[i].length; k++) {
 					if (state[i + k][j + k] != player) {
 						break;
 					}
@@ -98,8 +96,7 @@ public class SimpleRulesArtificialIntelligence extends
 					return true;
 				}
 
-				for (k = 0; k < WIN_LINE_LENGTH && (i - k) >= 0
-						&& (j + k) < state[i].length; k++) {
+				for (k = 0; k < WIN_LINE_LENGTH && (i - k) >= 0 && (j + k) < state[i].length; k++) {
 					if (state[i - k][j + k] != player) {
 						break;
 					}
@@ -142,8 +139,7 @@ public class SimpleRulesArtificialIntelligence extends
 					return true;
 				}
 
-				for (k = 0; k < subLineLength && (i + k) < state.length
-						&& (j + k) < state[i].length; k++) {
+				for (k = 0; k < subLineLength && (i + k) < state.length && (j + k) < state[i].length; k++) {
 					if (state[i + k][j + k] != player) {
 						break;
 					}
@@ -152,8 +148,7 @@ public class SimpleRulesArtificialIntelligence extends
 					return true;
 				}
 
-				for (k = 0; k < subLineLength && (i - k) >= 0
-						&& (j + k) < state[i].length; k++) {
+				for (k = 0; k < subLineLength && (i - k) >= 0 && (j + k) < state[i].length; k++) {
 					if (state[i - k][j + k] != player) {
 						break;
 					}
@@ -287,7 +282,8 @@ public class SimpleRulesArtificialIntelligence extends
 			}
 		}
 
-		// TODO It is better to block three in a row where it will be possible to
+		// TODO It is better to block three in a row where it will be possible
+		// to
 		// form four in a row.
 
 		if (solutions.size() == 0) {
@@ -296,6 +292,68 @@ public class SimpleRulesArtificialIntelligence extends
 			Collections.shuffle(solutions);
 			return solutions.get(0);
 		}
+	}
+
+	/**
+	 * Calculate pick and select around the pick.
+	 * 
+	 * @return
+	 */
+	private int f3() {
+		/*
+		 * Give chance to other rules to work.
+		 */
+		if (Util.PRNG.nextDouble() < 0.1) {
+			// Testing only.
+			// return -1;
+		}
+
+		/*
+		 * Zero counters.
+		 */
+		double total = 0;
+		double cumulative[] = new double[state.length];
+		for (int i = 0; i < cumulative.length; i++) {
+			cumulative[i] = 0;
+			for (int j = 0; j < state[i].length; j++) {
+				if (state[i][j] != player) {
+					cumulative[i]++;
+					total++;
+				}
+			}
+		}
+
+		/*
+		 * If there is no our own stones give up in this rule.
+		 */
+		if (total < 1.0D) {
+			return -1;
+		}
+
+		/*
+		 * Calculate percentage by columns.
+		 */
+		for (int i = 0; i < cumulative.length; i++) {
+			cumulative[i] /= total;
+		}
+
+		/*
+		 * Calculate comulative function.
+		 */
+		for (int i = 1; i < cumulative.length; i++) {
+			cumulative[i] += cumulative[i-1];
+		}		
+		
+		/*
+		 * Select index with particular probability.
+		 */
+		double number = Util.PRNG.nextDouble();
+		for (int i = cumulative.length-1; i >= 0; i--) {
+			if(number > cumulative[i]) {
+				return i+1;
+			}
+		}
+		return 0;
 	}
 
 	/**
@@ -332,10 +390,15 @@ public class SimpleRulesArtificialIntelligence extends
 			Util.log("Rule 3.");
 		} else if ((result = addOneForBlockOtherToFormThree()) != -1) {
 			Util.log("Rule 4.");
+		} else if ((result = f3()) != -1) {
+			Util.log("Rule f3.");
 		} else if ((result = addRnadom()) != -1) {
 			Util.log("Rule 5.");
 		}
 
+		// Testing only.
+		result = f3();
+		
 		return result;
 	}
 }
