@@ -338,7 +338,7 @@ public class SimpleRulesArtificialIntelligence extends AbstractArtificialIntelli
 		}
 
 		/*
-		 * Calculate comulative function.
+		 * Calculate cumulative function.
 		 */
 		for (int i = 1; i < cumulative.length; i++) {
 			cumulative[i] += cumulative[i-1];
